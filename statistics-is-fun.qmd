@@ -1,6 +1,6 @@
 ---
 title: Machine go brrrrr
-subtitle: Making analysis **<span style='color:#5A9282'>easy</span>** and **<span style='color:#5A9282'>fun</span>** with **<span style='color:#5A9282'>computational statistics</span>** and **<span style='color:#5A9282'>Bayesian inference</span>**
+subtitle: Making analysis **<span style='color:#5A9282'>easy</span>** and **<span style='color:#5A9282'>fun</span>** with **<span style='color:#5A9282'>computational statistics</span>**
 author: Mark Rieke
 date: November 16, 2024
 format: 
@@ -140,15 +140,15 @@ survey %>%
 
 ![](img/variance_7.png)
 
-## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+## `r color_text("Example", dd_green)`: weighting surveys
 
 ![](img/confusion.png)
 
-## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+## `r color_text("Example", dd_green)`: weighting surveys
 
 ![](img/bluesky.png)
 
-## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+## `r color_text("Example", dd_green)`: weighting surveys
 
 ```{stan, output.var='stanmodel'}
 #| echo: true
@@ -159,7 +159,7 @@ model {
 }
 ```
 
-## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+## `r color_text("Example", dd_green)`: weighting surveys
 
 ```{stan, output.var='stanmodel'}
 #| echo: true
@@ -228,7 +228,7 @@ wt_draws %>%
                        sep = "<br>"))
 ```
 
-## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+## `r color_text("Example", dd_green)`: weighting surveys
 
 ```{stan, output.var='stanmodel'}
 #| echo: true
@@ -267,7 +267,21 @@ survey_fit$draws("theta", format = "df") %>%
        caption = "Based on a poll of 700 respondents.")
 ```
 
-# 
+# In conclusion
 
+::: {.incremental}
 
+* Simulation keeps your analysis `r color_text("**tied to your research question**", dd_green)`
+* Simulation makes analysis `r color_text("**easy**", dd_green)`
+* Simulation keeps makes statistics `r color_text("**fun**", dd_green)` :)
 
+:::
+
+# Thanks!
+
+## Resources & whatnot
+
+* McElreath, Richard. *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. 2nd Edition. Chapman and Hall/CRC Press, 2018.
+* Wickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. *R for Data Science: Import, Tidy, Transform, Visualize, and Model Data*. 2nd Edition. O'Reilly Media, Inc., 2023.
+
+Code and slides for this presentation can be found [on github](https://github.com/markjrieke/2024-corporate-retreat).
