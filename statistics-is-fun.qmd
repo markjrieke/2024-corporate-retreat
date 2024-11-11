@@ -1,0 +1,284 @@
+---
+title: Machine go brrrrr
+subtitle: Making analysis **<span style='color:#5A9282'>easy</span>** and **<span style='color:#5A9282'>fun</span>** with **<span style='color:#5A9282'>computational statistics</span>** and **<span style='color:#5A9282'>Bayesian inference</span>**
+author: Mark Rieke
+date: November 16, 2024
+format: 
+  revealjs:
+    smaller: true
+    embed-resources: true
+    theme: [simple, styles.scss]
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(riekelib)
+library(gt)
+library(gtExtras)
+library(cmdstanr)
+library(ggdist)
+library(riekelib)
+
+dd_green <- "#5A9282"
+```
+
+# Who `r color_text("took", dd_green)` stats?
+
+# Who `r color_text("liked", dd_green)` stats?
+
+## What do we use stats for?
+
+::: {.incremental}
+
+* Pose a question
+* Estimate a value
+* Quantify uncertainty
+
+:::
+
+## Most stats courses look like this
+
+![](img/mcelreath_tests.png)
+
+# This `r color_text("*sucks*", dd_green)`
+
+::: {.incremental}
+
+* Statistics becomes "a box to check"
+* These procedures are brittle!
+* It's really easy to mess up!
+
+:::
+
+# What works better?
+
+# `r color_text("Simulation!", dd_green)`
+
+## What do we use stats for?
+
+* Pose a question
+* Estimate a value
+* Quantify uncertainty
+
+<h2>How can we use simulation for statistics?</h2>
+
+::: {.incremental}
+
+* Frame question in terms of a process
+* Use random number generators to generate an answer
+* Do this a bunch of times
+* Quantify uncertainty
+
+:::
+
+## `r color_text("Example", dd_green)`: weighting surveys
+
+```{r}
+groups <-
+  crossing(strata_1 = LETTERS[1:2],
+           strata_2 = 1:2) %>%
+  mutate(group = paste0(strata_1, strata_2),
+         group_mean = c(0.97, 0.90, 0.10, 0.03),
+         population = c(0.28, 0.22, 0.25, 0.25),
+         p_respond = c(0.07, 0.06, 0.05, 0.04),
+         p_sampled = population * p_respond,
+         p_sampled = p_sampled/sum(p_sampled))
+
+set.seed(1234)
+survey <- 
+  tibble(group = list(groups$group)) %>%
+  mutate(K = map(group, ~rmultinom(1, 700, groups$p_sampled)[,1])) %>%
+  unnest(c(group, K)) %>%
+  left_join(groups) %>%
+  bind_cols(Y = rbinom(nrow(.), .$K, .$group_mean)) %>%
+  mutate(observed = K/sum(K),
+         weight = population/observed) %>%
+  select(group,
+         population,
+         K,
+         Y,
+         weight)
+
+survey %>%
+  mutate(party = if_else(str_detect(group, "A"), "Democrat", "Republican"),
+         gender = if_else(str_detect(group, "1"), "Women", "Men")) %>%
+  select(-group) %>%
+  mutate(`group mean` = Y/K,
+         `group mean` = scales::label_percent(accuracy = 1)(`group mean`),
+         population = scales::label_percent()(population),
+         `sample proportion` = scales::label_percent(accuracy = 1)(K/sum(K)),
+         weight = scales::label_number(accuracy = 0.01)(weight)) %>%
+  relocate(weight, .after = `sample proportion`) %>%
+  relocate(party, gender) %>%
+  gt() %>%
+  tab_header(title = "An example pre-election survey",
+             subtitle = "Proportion of each subgroup that support the democratic candidate") %>%
+  gt_theme_nytimes()
+```
+
+## `r color_text("Example", dd_green)`: weighting surveys
+
+![](img/mcelreath_tests.png)
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+![](img/variance_1.png)
+
+![](img/variance_2.png)
+
+![](img/variance_3.png)
+
+![](img/variance_4.png)
+
+![](img/variance_5.png)
+
+![](img/variance_6.png)
+
+![](img/variance_7.png)
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+![](img/confusion.png)
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+![](img/bluesky.png)
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+```{stan, output.var='stanmodel'}
+#| echo: true
+#| eval: false
+model {
+  Y ~ binomial(K, theta);
+  wt_mean = sum(theta * wt * K) / sum(wt * K);
+}
+```
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+```{stan, output.var='stanmodel'}
+#| echo: true
+#| eval: false
+model {
+  Y ~ binomial(K, theta);
+  wt_mean = sum(theta * wt * K) / sum(wt * K);
+}
+```
+
+```{r}
+#| include: false
+wtmean <-
+  cmdstan_model(
+    "stan/wtmean.stan",
+    dir = "exe/"
+  )
+
+stan_data <-
+  list(
+    N = nrow(survey),
+    G = nrow(survey),
+    Y = survey$Y,
+    K = survey$K,
+    gid = 1:nrow(survey),
+    wt = survey$weight
+  )
+
+survey_fit <-
+  wtmean$sample(
+    data = stan_data,
+    seed = 1234,
+    iter_warmup = 2000,
+    iter_sampling = 2000,
+    chains = 4,
+    parallel_chains = 4
+  )
+```
+
+```{r}
+wt_draws <- 
+  survey_fit$draws("wt_mean", format = "df") %>%
+  as_tibble()
+
+pop_range <- quantile(wt_draws$wt_mean, probs = c(0.025, 0.975))
+pop_range <- scales::label_percent(accuracy = 1)(pop_range)
+  
+wt_draws %>% 
+  mutate(variable = "Population Mean") %>%
+  ggplot(aes(x = wt_mean)) + 
+  geom_histogram(bins = 60,
+                 fill = dd_green,
+                 alpha = 0.8,
+                 color = "white") + 
+  scale_x_percent() + 
+  theme_rieke() + 
+  theme(axis.text.y = element_blank()) +
+  labs(title = "**New poll shows Americans are evenly split**",
+       subtitle = glue::glue("**{color_text(str_sub(pop_range[1], 1, 2), dd_green)}**-",
+                             "**{color_text(pop_range[2], dd_green)}** of ",
+                             "likely voters plan to vote for the democratic candidate"),
+       x = NULL,
+       y = NULL,
+       caption = paste("Based on a poll of 700 respondents.",
+                       "Responses are weighted by gender and party ID.",
+                       sep = "<br>"))
+```
+
+## `r color_text("Example", dd_green)`: weighting surveys {.scrollable}
+
+```{stan, output.var='stanmodel'}
+#| echo: true
+#| eval: false
+model {
+  Y ~ binomial(K, theta);
+  wt_mean = sum(theta * wt * K) / sum(wt * K);
+}
+```
+
+```{r}
+survey_fit$draws("theta", format = "df") %>%
+  as_tibble() %>%
+  pivot_longer(starts_with("theta"),
+               names_to = "variable",
+               values_to = "theta") %>%
+  mutate(variable = parse_number(variable)) %>%
+  left_join(groups %>% select(group) %>% rowid_to_column("variable")) %>%
+  mutate(party = if_else(str_detect(group, "A"), "Democrat", "Republican"),
+         gender = if_else(str_detect(group, "1"), "Women", "Men"),
+         group = paste(party, gender),
+         group = fct_reorder(group, theta)) %>%
+  ggplot(aes(x = group,
+             y = theta,
+             fill = party)) + 
+  stat_histinterval(slab_alpha = 0.8) + 
+  scale_y_percent() + 
+  scale_fill_manual(values = c("royalblue", "#ED4337")) + 
+  coord_flip() +
+  theme_rieke() +
+  theme(legend.position = "none") +
+  labs(title = "**The electorate is highly polarized**",
+       subtitle = "Support for the democratic candidate by party and gender",
+       x = NULL,
+       y = NULL,
+       caption = "Based on a poll of 700 respondents.")
+```
+
+
+##
+
+### Problem
+
+* 
+* a;sdlkfjasdklfj
+
+### Solution
+
+* FDSKFJKJD
+* askfjal;sfjk
+
+
+
