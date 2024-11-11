@@ -267,18 +267,7 @@ survey_fit$draws("theta", format = "df") %>%
        caption = "Based on a poll of 700 respondents.")
 ```
 
-
-##
-
-### Problem
-
-* 
-* a;sdlkfjasdklfj
-
-### Solution
-
-* FDSKFJKJD
-* askfjal;sfjk
+# 
 
 
 
