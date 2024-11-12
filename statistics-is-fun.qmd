@@ -120,6 +120,16 @@ survey %>%
   gt_theme_nytimes()
 ```
 
+::: {.incremental}
+
+* Respondent preference varies by subgroup
+* Response rate varies by subgroup
+* Need to weight responses to make our sample representative of the population
+* Weighted mean is easy!
+* Uncertainty around the weighted mean is hard! (analytically)
+
+:::
+
 ## `r color_text("Example", dd_green)`: weighting surveys
 
 ![](img/mcelreath_tests.png)
