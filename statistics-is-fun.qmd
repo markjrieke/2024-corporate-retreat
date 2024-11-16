@@ -1,6 +1,6 @@
 ---
 title: Machine go brrrrr
-subtitle: Making analysis **<span style='color:#5A9282'>easy</span>** and **<span style='color:#5A9282'>fun</span>** with **<span style='color:#5A9282'>computational statistics</span>**
+subtitle: Statistics is **<span style='color:#5A9282'>easy</span>** if you let the computer do all the work
 author: Mark Rieke
 date: November 16, 2024
 format: 
@@ -30,16 +30,6 @@ dd_green <- "#5A9282"
 
 # Who `r color_text("liked", dd_green)` stats?
 
-## What do we use stats for?
-
-::: {.incremental}
-
-* Pose a question
-* Estimate a value
-* Quantify uncertainty
-
-:::
-
 ## Most stats courses look like this
 
 ![](img/mcelreath_tests.png)
@@ -48,9 +38,9 @@ dd_green <- "#5A9282"
 
 ::: {.incremental}
 
-* Statistics becomes "a box to check"
-* These procedures are brittle!
-* It's really easy to mess up!
+* Just checking a box
+* Classroom examples vs real-world data
+* Easy to mess up!
 
 :::
 
@@ -58,19 +48,13 @@ dd_green <- "#5A9282"
 
 # `r color_text("Simulation!", dd_green)`
 
-## What do we use stats for?
-
-* Pose a question
-* Estimate a value
-* Quantify uncertainty
-
-<h2>How can we use simulation for statistics?</h2>
+## How can we use simulation for statistics?
 
 ::: {.incremental}
 
 * Frame question in terms of a process
 * Use random number generators to generate an answer
-* Do this a bunch of times
+* Do this a bunch of times (machine go brrrrr)
 * Quantify uncertainty
 
 :::
@@ -153,10 +137,6 @@ survey %>%
 ## `r color_text("Example", dd_green)`: weighting surveys
 
 ![](img/confusion.png)
-
-## `r color_text("Example", dd_green)`: weighting surveys
-
-![](img/bluesky.png)
 
 ## `r color_text("Example", dd_green)`: weighting surveys
 
@@ -281,9 +261,9 @@ survey_fit$draws("theta", format = "df") %>%
 
 ::: {.incremental}
 
-* Simulation keeps your analysis `r color_text("**tied to your research question**", dd_green)`
-* Simulation makes analysis `r color_text("**easy**", dd_green)`
-* Simulation keeps makes statistics `r color_text("**fun**", dd_green)` :)
+* Simulation makes statistics `r color_text("**easy**", dd_green)`
+* This lets you `r color_text("**focus on your research question**", dd_green)`
+* Simulation keeps statistics `r color_text("**fun**", dd_green)` :)
 
 :::
 
